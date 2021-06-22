@@ -15,7 +15,6 @@ public class GrafoLista extends Grafo {
 		this.grafo = new LinkedList <List<Nodo>>();
 		for (int i=0; i<tamano; i++) {
 			this.grafo.add(new LinkedList <Nodo>());
-			//uso treeSet, pues no hay dos aristas iguales
 		}
 		
 		//Los nodos son siempre consecutivos.
@@ -54,7 +53,7 @@ public class GrafoLista extends Grafo {
 	public double [] dijkstra (int desde) {
 		desde--;
 		double [] distancias = new double[getNodos()];
-//		double [] predecesores = new double [getNodos()];
+		int [] predecesores = new int [getNodos()];
 		
 		
 		Set<Integer> s = new HashSet<Integer>();
@@ -77,10 +76,10 @@ public class GrafoLista extends Grafo {
 			distancias[nodo.getId()] = nodo.getPeso();
 		}
 		
-//		for (int i = 0; i < predecesores.length; i++) {
-//			predecesores[i] = desde+1;
-//		}
-//		
+		for (int i = 0; i < predecesores.length; i++) {
+			predecesores[i] = desde+1;
+		}
+		
 		while(!vMenosS.isEmpty()) {
 			boolean bandera=false;
 			double min=0;
@@ -106,15 +105,16 @@ public class GrafoLista extends Grafo {
 			s.add(w);
 			
 			for(Nodo nodo : this.grafo.get(w)) {
-				distancias[nodo.getId()]=Double.min(distancias[nodo.getId()],distancias[w] + nodo.getPeso());
-				//predecesores[nodo.getId()-1]=nodo.getId();
-				//aca si el minimo es el de la derecha, debe haber reemplazo
+				if (distancias[nodo.getId()]>distancias[w] + nodo.getPeso()) {
+					distancias[nodo.getId()]=distancias[w] + nodo.getPeso();
+					predecesores[nodo.getId()] =w+1;
+				}
 			}
 			
 		}
-//		for (int i=0; i<predecesores.length; i++) {
-//			System.out.println(i + ": " + predecesores[i]);
-//		}
+		for (int i=0; i<predecesores.length; i++) {
+			System.out.println(i + ": " + (predecesores[i]));
+		}
 		return distancias;
 	}
 }
