@@ -11,7 +11,7 @@ public class Nodo implements Comparable<Nodo>{
 	
 	@Override
 	public String toString() {
-		return "("+(id+1)+","+peso+")";
+		return "("+id+","+peso+")";
 	}
 
 	@Override

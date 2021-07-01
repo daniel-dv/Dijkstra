@@ -1,25 +1,25 @@
 package dijkstra;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
 
 public class GrafoLista extends Grafo {
-	
-	private List<List<Nodo>> grafo;
-	
+
+	private List<PriorityQueue<Nodo>> grafo;
+	private int[] predecesores = null;
+
 	public GrafoLista(int tamano) {
-		this.grafo = new LinkedList <List<Nodo>>();
-		for (int i=0; i<tamano; i++) {
-			this.grafo.add(new LinkedList <Nodo>());
+
+		// Los nodos son siempre consecutivos.
+		this.grafo = new LinkedList<PriorityQueue<Nodo>>();
+		for (int i = 0; i < tamano; i++) {
+			this.grafo.add(new PriorityQueue<Nodo>());
 		}
-		
-		//Los nodos son siempre consecutivos.
 	}
-	
+
 	@Override
 	public int getNodos() {
 		return this.grafo.size();
@@ -27,94 +27,113 @@ public class GrafoLista extends Grafo {
 
 	@Override
 	public void setArista(int desde, int hasta, double costo) {
-		this.grafo.get(desde-1).add(new Nodo(hasta-1, costo));
-		this.grafo.get(desde-1).sort(null);
+		this.grafo.get(desde).add(new Nodo(hasta, costo));
 	}
 
 	@Override
 	public Double getArista(int desde, int hasta) {
 		for (Nodo actual : this.grafo.get(desde)) {
-			if (actual.getId()==hasta)
+			if (actual.getId() == hasta)
 				return actual.getPeso();
 		}
 		return null;
 	}
-	
+
 	@Override
 	public String toString() {
-		String sal="";
-		for (List<Nodo> set : grafo) {
-			sal+=set;
+		String sal = "";
+		for (PriorityQueue<Nodo> set : grafo) {
+			sal += set;
 		}
 		return sal;
 	}
-	
-	
-	public double [] dijkstra (int desde) {
-		desde--;
-		double [] distancias = new double[getNodos()];
-		int [] predecesores = new int [getNodos()];
-		
-		
+
+	@Override
+	public double[] dijkstra(int desde) {
+		double[] distancias = new double[getNodos()];
+		this.predecesores = new int[getNodos()];
+
 		Set<Integer> s = new HashSet<Integer>();
-		
+
 		s.add(desde);
-		
-		Set <Integer> vMenosS= new HashSet<Integer>();
-		
-		for (int i=0; i< this.getNodos() ; i++) {
-			if (desde!=i)
+
+		Set<Integer> vMenosS = new HashSet<Integer>();
+
+		// cargo vMenosS con todos los nodos excepto el que se encuentra ya en s
+		for (int i = 0; i < this.getNodos(); i++) {
+			if (desde != i)
 				vMenosS.add(i);
 		}
-		for (int i=0; i<distancias.length ; i++) {
-			distancias[i]=Double.MAX_VALUE;
+
+		// Se inicializa el vector distancias con infinito en todas las posiciones
+
+		for (int i = 0; i < distancias.length; i++) {
+			distancias[i] = Double.MAX_VALUE;
 		}
+
 		distancias[desde] = 0;
 
-		
+		// Se inicializa vector de predecesores con el nodo inicial
+
+		for (int i = 0; i < this.predecesores.length; i++) {
+			this.predecesores[i] = desde;
+		}
+
+		// Primer paso: se carga en distancias todas las distancias a nodos directos
+		// desde el nodo inicial
+
 		for (Nodo nodo : this.grafo.get(desde)) {
 			distancias[nodo.getId()] = nodo.getPeso();
 		}
-		
-		for (int i = 0; i < predecesores.length; i++) {
-			predecesores[i] = desde+1;
-		}
-		
-		while(!vMenosS.isEmpty()) {
-			boolean bandera=false;
-			double min=0;
+
+		// Segundo y n pasos... Mientras vMenosS no sea vacio
+
+		while (!vMenosS.isEmpty()) {
+			boolean bandera = false;
+			double min = 0;
 			int w = 0;
+
 			for (Integer integer : vMenosS) {
 				if (!bandera) {
-					min=distancias[integer];
-					w=integer;
+					min = distancias[integer];
+					w = integer;
 
-					bandera=true;
-				}
-				else {
+					bandera = true;
+				} else {
 					if (distancias[integer] < min) {
-						min=distancias[integer];
-						w=integer;
-						
+						min = distancias[integer];
+						w = integer;
+
 					}
 				}
-					
+
 			}
-			//ya calcule el minimo
+			// ya calcule el minimo
 			vMenosS.remove(w);
 			s.add(w);
-			
-			for(Nodo nodo : this.grafo.get(w)) {
-				if (distancias[nodo.getId()]>distancias[w] + nodo.getPeso()) {
-					distancias[nodo.getId()]=distancias[w] + nodo.getPeso();
-					predecesores[nodo.getId()] =w+1;
+			PriorityQueue<Nodo> auxiliar = new PriorityQueue<Nodo>();
+			auxiliar.addAll(this.grafo.get(w));
+
+			while (!auxiliar.isEmpty()) {
+				Nodo nodoAux = auxiliar.poll();
+				if (distancias[nodoAux.getId()] > distancias[w] + nodoAux.getPeso()) {
+					distancias[nodoAux.getId()] = distancias[w] + nodoAux.getPeso();
+					this.predecesores[nodoAux.getId()] = w;
 				}
 			}
-			
+
 		}
-		for (int i=0; i<predecesores.length; i++) {
-			System.out.println(i + ": " + (predecesores[i]));
+		for (int i = 0; i < this.predecesores.length; i++) {
+			System.out.println(i + ": " + (this.predecesores[i]));
 		}
 		return distancias;
 	}
+	
+	public int [] getPredecesores() {
+		return this.predecesores;
+	}
+	
+	
 }
+
+
